@@ -15,9 +15,6 @@ import (
 	"strings"
 )
 
-// Because it is important to know when enough is enough.
-const MAXLINES int = 10
-
 // ReadModelines looks into the given file and searches for pets modelines. A
 // modeline is any string which includes the 'pets:' substring. All modelines
 // found are returned as-is in a slice.
@@ -31,19 +28,12 @@ func ReadModelines(path string) ([]string, error) {
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
-	scannedLines := 0
 	for scanner.Scan() {
-		if scannedLines == MAXLINES {
-			return modelines, nil
-		}
-
 		line := scanner.Text()
 
 		if strings.Contains(line, "pets:") {
 			modelines = append(modelines, line)
 		}
-
-		scannedLines += 1
 	}
 	return modelines, nil
 }

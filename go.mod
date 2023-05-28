@@ -1,4 +1,4 @@
-module github.com/ema/pets
+module github.com/meithecatte/pets
 
 go 1.19
 

@@ -266,7 +266,7 @@ func Chmod(trigger *PetsFile) *PetsAction {
 
 // NewPetsActions is the []PetsFile -> []PetsAction constructor.  Given a slice
 // of PetsFile(s), generate a list of PetsActions to perform.
-func NewPetsActions(triggers []*PetsFile) []*PetsAction {
+func NewPetsActions(triggers []*PetsFile, redo bool) []*PetsAction {
 	actions := []*PetsAction{}
 
 	// First, install all needed packages. Build a list of all missing package
@@ -314,7 +314,7 @@ func NewPetsActions(triggers []*PetsFile) []*PetsAction {
 		}
 
 		// Finally, post-update commands
-		if trigger.Post != nil && actionFired {
+		if trigger.Post != nil && (actionFired || redo) {
 			actions = append(actions, &PetsAction{
 				Cause:   POST,
 				Command: trigger.Post,

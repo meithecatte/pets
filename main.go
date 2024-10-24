@@ -14,14 +14,15 @@ import (
 
 // ParseFlags parses the CLI flags and returns: the configuration directory as
 // string, a bool for debugging output, and another bool for dryRun.
-func ParseFlags() (string, bool, bool) {
+func ParseFlags() (string, bool, bool, bool) {
 	var confDir string
 	defaultConfDir := filepath.Join(os.Getenv("HOME"), "pets")
 	flag.StringVar(&confDir, "conf-dir", defaultConfDir, "Pets configuration directory")
 	debug := flag.Bool("debug", false, "Show debugging output")
 	dryRun := flag.Bool("dry-run", false, "Only show changes without applying them")
+	redo := flag.Bool("redo", false, "Run all post-update commands, even if the file hasn't changed")
 	flag.Parse()
-	return confDir, *debug, *dryRun
+	return confDir, *debug, *dryRun, *redo
 }
 
 // GetLogFilter returns a LevelFilter suitable for log.SetOutput().
@@ -41,7 +42,7 @@ func GetLogFilter(debug bool) *logutils.LevelFilter {
 func main() {
 	startTime := time.Now()
 
-	confDir, debug, dryRun := ParseFlags()
+	confDir, debug, dryRun, redo := ParseFlags()
 
 	log.SetOutput(GetLogFilter(debug))
 
@@ -83,7 +84,7 @@ func main() {
 	log.Println("[DEBUG] * configuration validation ends *")
 
 	// Generate the list of actions to perform.
-	actions := NewPetsActions(goodPets)
+	actions := NewPetsActions(goodPets, redo)
 
 	// *** Update visualizer ***
 	// Display:
@@ -117,7 +118,10 @@ func main() {
 		if err != nil {
 			log.Printf("[ERROR] performing action %s: %s\n", action, err)
 			exitStatus = 1
-			break
+
+			if action.Cause != POST {
+				break
+			}
 		}
 	}
 
